@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styleFormulaire.css">
+</head>
+<body>
+    <header>
+        <nav class="headerNav">
+            <div class="dropdownMenu">
+                <span class="navItem">Livre</span>
+                <div class="dropdownMenuContent">
+                    <span id="nouveauLivre">nouveau</span>
+                </div>                
+            </div>
+
+            <div class="dropdownMenu">
+                <span class="navItem">Auteur</span>
+                <div class="dropdownMenuContent">
+
+                </div>                
+            </div>
+
+            <div class="dropdownMenu">
+                <a href="#" class="navItem"></a>
+                <div class="dropdownMenuContent">
+
+                </div>                
+            </div>
+        </nav>
+    </header>
+
+    <!-- formulaire biblitheque -->
+     <div id="container">
+
+         <form id="formNouveauLivre" class="hidden">
+             <div>
+                 <label for="titre">Titre :</label>
+                 <input type="text" id="titre" name="titre" maxlength="100" required>
+             </div>
+         
+             <div>
+                 <label for="isbn">ISBN :</label>
+                 <input type="text" id="isbn" name="isbn" maxlength="16" required
+                pattern="\d{4}-\d{4}-\d{4}-\d{1}" 
+                placeholder="1234-5678-9101-2" 
+                required>
+                 <small>Format attendu : 1234-5678-9101-2</small>
+             </div>
+         
+             <div>
+                 <label for="annee">Année de publication :</label>
+                 <input type="number" id="annee" name="annee" min="0" required>
+                 <small>Valeur attendué : 0 - année actuelle</small>
+             </div>
+         
+             <div>
+                 <label for="pages">Nombre de pages :</label>
+                 <input type="number" id="pages" name="pages" min="1" required>
+             </div>
+     
+             <div>
+                 <label for="editeur">Éditeur:</label>
+                 <select id="editeur" name="editeur" required>
+                 <!-- Remplisage diynamique -->
+                 </select>
+             </div>
+         
+             <button type="submit">Enregistrer</button>    
+         </form>
+         
+     </div>
+    <script src="./scriptNouveauLivre.js"></script>
+
+     <!-- formulaire biblitheque -->
+    
+    <script src="./script.js"></script>
+</body>
+</html>

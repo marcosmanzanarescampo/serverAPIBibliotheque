@@ -1,0 +1,82 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+html, body{
+    background-image: url("./images/fondBibliotheque.jpg");
+    background-position:center;
+    background-size: cover;
+    height: 100%;
+}
+
+.headerNav{
+    display: inline-flex;
+    column-gap: 20px;
+    width: 100%;
+    background-color: #333;
+ }
+
+ .navItem{
+    padding: 10px;
+ }
+
+ #container{
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   height: 100%;
+ }
+
+ .dropdownMenu{
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 30px;
+    background-color: #333;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 50px; 
+ }
+
+ .dropdownMenu:hover .dropdownMenuContent{
+    display: block;
+    /* height: 210px; */
+    height: auto;
+ }
+
+ .dropdownMenu span{
+   font-family: 'Courier New', Courier, monospace;
+   color: white;
+   font-size: 35px;
+   padding: 10px;
+   cursor: context-menu;
+   color: white;
+ }
+
+
+ .dropdownMenuContent{
+    font-weight:normal;
+    background-color: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    transition: height 0.2s ease-in;
+    position: absolute;
+    top: 70px;
+    height: 0;
+    border-radius: 0 0 5px 5px;
+    backdrop-filter: blur(1px);
+ }
+
+ .dropdownMenuContent span:hover{
+    color: white;
+    background-color: green;    
+ }
+
+ .show{
+   display: block /* ou block */   
+ }
+
+ .hidden {
+   display: none;
+ }

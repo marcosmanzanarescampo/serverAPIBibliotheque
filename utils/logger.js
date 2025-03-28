@@ -1,23 +1,30 @@
-// utils/logger.js
+import winston from 'winston';
 
-export const logger = {
-    info(message) {
-      console.log(`[INFO] ${new Date().toISOString()} - ${message}`);
-    },
-  
-    debug(message) {
-      console.log(`[DEBUG] ${new Date().toISOString()} - ${message}`);
-    },
-  
-    warn(message) {
-      console.warn(`[WARN] ${new Date().toISOString()} - ${message}`);
-    },
-  
-    error(message, error) {
-      console.error(`[ERROR] ${new Date().toISOString()} - ${message}`);
-      if (error) {
-        console.error(error);
-      }
-    }
-  };
-  
+// Create a custom logger
+export const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    winston.format.colorize(),
+    winston.format.printf(
+      info => `${info.timestamp} ${info.level}: ${info.message}`
+    )
+  ),
+  transports: [
+    // Console transport
+    new winston.transports.Console(),
+    
+    // File transport for errors
+    new winston.transports.File({ 
+      filename: 'logs/error.log', 
+      level: 'error' 
+    }),
+    
+    // File transport for combined logs
+    new winston.transports.File({ 
+      filename: 'logs/combined.log' 
+    })
+  ]
+});

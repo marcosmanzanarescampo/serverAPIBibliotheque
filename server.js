@@ -1,30 +1,42 @@
-// server.js
-import http from 'http';
-import { routes } from './routes/routes.js';
+import express from 'express';
+import cors from 'cors';
 import { logger } from './utils/logger.js';
+import { routes } from './routes/routes.js';
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-const server = http.createServer((req, res) => {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-  // Preflight CORS
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
-
-  // Log incoming request
-  //ajouter le logger ici
-
-  // Route the request
-  routes(req, res);
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url}`);
+  next();
 });
 
-server.listen(PORT, () => {
+// Routes
+routes(app);
+
+// Global error handler
+app.use((err, req, res, next) => {
+  logger.error(err.stack);
+  res.status(500).json({ 
+    success: false, 
+    error: 'Something went wrong!' 
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  logger.warn(`Route not found: ${req.method} ${req.url}`);
+  res.status(404).json({ 
+    success: false, 
+    error: 'Route not found' 
+  });
+});
+
+app.listen(PORT, () => {
   logger.info(`Server running at http://localhost:${PORT}/`);
 });

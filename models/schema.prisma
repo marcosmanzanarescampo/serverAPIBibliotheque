@@ -1,0 +1,120 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Editeur (Publisher) Model
+model Editeur {
+  id        Int      @id @default(autoincrement())
+  editeur   String   @unique
+  livres    Livre[]
+}
+
+// Livre (Book) Model
+model Livre {
+  id                Int      @id @default(autoincrement())
+  titre             String
+  ISBN              String   @unique
+  annee_Publication Int?
+  nb_Pages          Int?
+  editeur_id        Int
+  editeur           Editeur  @relation(fields: [editeur_id], references: [id])
+  
+  livre_auteur      LivreAuteur[]
+  livre_categorie   LivreCategorie[]
+  exemplaires       Exemplaire[]
+}
+
+// Nationalite (Nationality) Model
+model Nationalite {
+  id            Int      @id @default(autoincrement())
+  nationalite   String
+  auteurs       Auteur[]
+}
+
+// Auteur (Author) Model
+model Auteur {
+  id                Int             @id @default(autoincrement())
+  nom               String
+  prenom            String
+  date_naissance    DateTime?
+  nationalite_id    Int
+  nationalite       Nationalite      @relation(fields: [nationalite_id], references: [id])
+  
+  livre_auteur      LivreAuteur[]
+}
+
+// Categorie (Category) Model
+model Categorie {
+  id                Int                 @id @default(autoincrement())
+  categorie         String
+  livre_categorie   LivreCategorie[]
+}
+
+// Etat (State) Model
+model Etat {
+  id                Int             @id @default(autoincrement())
+  etat              String
+  exemplaires       Exemplaire[]
+}
+
+// Exemplaire (Copy) Model
+model Exemplaire {
+  id                Int             @id @default(autoincrement())
+  livre_id          Int
+  livre             Livre           @relation(fields: [livre_id], references: [id])
+  etat_id           Int
+  etat              Etat            @relation(fields: [etat_id], references: [id])
+  rare              Boolean         @default(false)
+  disponible        Boolean         @default(true)
+  emprunts          Emprunt[]
+}
+
+// Membre (Member) Model
+model Membre {
+  id                Int             @id @default(autoincrement())
+  nom               String?
+  prenom            String?
+  mail              String?         @unique
+  telephone         String?
+  date_inscription  DateTime        @default(now())
+  emprunts          Emprunt[]
+}
+
+// Livre-Auteur (Book-Author) Junction Model
+model LivreAuteur {
+  livre_id          Int
+  livre             Livre           @relation(fields: [livre_id], references: [id])
+  auteur_id         Int
+  auteur            Auteur          @relation(fields: [auteur_id], references: [id])
+  
+  @@id([livre_id, auteur_id])
+}
+
+// Livre-Categorie (Book-Category) Junction Model
+model LivreCategorie {
+  livre_id          Int
+  livre             Livre           @relation(fields: [livre_id], references: [id])
+  categorie_id      Int
+  categorie         Categorie       @relation(fields: [categorie_id], references: [id])
+  
+  @@id([livre_id, categorie_id])
+}
+
+// Emprunt (Loan) Model
+model Emprunt {
+  date_emprunt            DateTime
+  exemplaire_id           Int
+  exemplaire              Exemplaire  @relation(fields: [exemplaire_id], references: [id])
+  membre_id               Int
+  membre                  Membre      @relation(fields: [membre_id], references: [id])
+  date_retour_prevue      DateTime
+  date_retour_effective   DateTime?
+
+  @@id([date_emprunt, exemplaire_id, membre_id])
+}

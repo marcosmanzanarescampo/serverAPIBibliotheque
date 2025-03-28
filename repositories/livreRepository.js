@@ -1,86 +1,174 @@
 // repositories/livreRepository.js
-import { openDB } from '../config/database.js';
-import { Livre } from '../models/Livre.js';
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export const livreRepository = {
   async findAllLivres() {
-    const client = await openDB();
     try {
-      const result = await client.query(`
-        SELECT L.id, L.titre, L.ISBN, L.annee_Publication, L.nb_Pages, L.editeur
-        FROM livre AS L
-      `);
-      
-      return result.rows.map(row => new Livre(
-        row.id,
-        row.titre,
-        row.ISBN,
-        row.annee_Publication,
-        row.nb_Pages,
-        row.editeur
-      ));
+      return await prisma.livre.findMany({
+        include: {
+          editeur: true,
+          livre_auteur: {
+            include: {
+              auteur: true
+            }
+          },
+          livre_categorie: {
+            include: {
+              categorie: true
+            }
+          }
+        }
+      });
     } catch (error) {
-      console.error('Error in livreRepository:', error);
-      throw new Error('Error in livreRepository: ' + error.message);
-    } finally {
-      client.release();
+      console.error('Error finding all livres:', error);
+      throw new Error('Failed to retrieve books: ' + error.message);
     }
   },
 
   async findAllLivresByTitre(titre) {
-    const client = await openDB();
     try {
-      const result = await client.query(`
-        SELECT *
-        FROM livre
-        WHERE titre LIKE $1
-      `, [`%${titre}%`]);
-      
-      return result.rows.map(row => new Livre(
-        row.id,
-        row.titre,
-        row.ISBN,
-        row.annee_Publication,
-        row.nb_Pages,
-        row.editeur
-      ));
+      return await prisma.livre.findMany({
+        where: {
+          titre: {
+            contains: titre,
+            mode: 'insensitive'
+          }
+        },
+        include: {
+          editeur: true
+        }
+      });
     } catch (error) {
-      console.error('Error in livreRepository:', error);
-      throw new Error('Error in livreRepository: ' + error.message);
-    } finally {
-      client.release();
+      console.error('Error finding livres by titre:', error);
+      throw new Error('Failed to retrieve books by title: ' + error.message);
     }
   },
 
-  // Other methods follow the same pattern, replacing SQLite-specific prepare/run 
-  // with PostgreSQL's parameterized query method
-
-  async createLivre(livre) {
-    const client = await openDB();
+  async findLivreById(id) {
     try {
-      const result = await client.query(`
-        INSERT INTO livre (titre, ISBN, annee_Publication, nb_Pages, editeur)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING id
-      `, [
-        livre.titre,
-        livre.ISBN,
-        livre.annee_Publication,
-        livre.nb_Pages,
-        livre.editeur
-      ]);
-  
-      return {
-        id: result.rows[0].id,
-        changes: result.rowCount
-      };
+      return await prisma.livre.findUnique({
+        where: { id },
+        include: {
+          editeur: true,
+          livre_auteur: {
+            include: {
+              auteur: true
+            }
+          },
+          livre_categorie: {
+            include: {
+              categorie: true
+            }
+          }
+        }
+      });
     } catch (error) {
-      console.error('Error in livreRepository:', error);
-      throw new Error('Error in livreRepository: ' + error.message);
-    } finally {
-      client.release();
+      console.error('Error finding livre by id:', error);
+      throw new Error('Failed to retrieve book: ' + error.message);
     }
   },
 
-  // Similar adjustments for other methods...
+  async createLivre(livreData) {
+    try {
+      return await prisma.livre.create({
+        data: {
+          titre: livreData.titre,
+          ISBN: livreData.ISBN,
+          annee_Publication: livreData.annee_Publication,
+          nb_Pages: livreData.nb_Pages,
+          editeur_id: livreData.editeur_id
+        }
+      });
+    } catch (error) {
+      console.error('Error creating livre:', error);
+      throw new Error('Failed to create book: ' + error.message);
+    }
+  },
+
+  async updateLivre(id, livreData) {
+    try {
+      return await prisma.livre.update({
+        where: { id },
+        data: {
+          titre: livreData.titre,
+          ISBN: livreData.ISBN,
+          annee_Publication: livreData.annee_Publication,
+          nb_Pages: livreData.nb_Pages,
+          editeur_id: livreData.editeur_id
+        }
+      });
+    } catch (error) {
+      console.error('Error updating livre:', error);
+      throw new Error('Failed to update book: ' + error.message);
+    }
+  },
+
+  async deleteLivre(id) {
+    try {
+      return await prisma.livre.delete({
+        where: { id }
+      });
+    } catch (error) {
+      console.error('Error deleting livre:', error);
+      throw new Error('Failed to delete book: ' + error.message);
+    }
+  },
+
+  async findAllLivresByCategorie(categorieId) {
+    try {
+      return await prisma.livre.findMany({
+        where: {
+          livre_categorie: {
+            some: {
+              categorie_id: categorieId
+            }
+          }
+        },
+        include: {
+          editeur: true
+        }
+      });
+    } catch (error) {
+      console.error('Error finding livres by categorie:', error);
+      throw new Error('Failed to retrieve books by category: ' + error.message);
+    }
+  },
+
+  async findAllLivresByAuteur(auteurId) {
+    try {
+      return await prisma.livre.findMany({
+        where: {
+          livre_auteur: {
+            some: {
+              auteur_id: auteurId
+            }
+          }
+        },
+        include: {
+          editeur: true
+        }
+      });
+    } catch (error) {
+      console.error('Error finding livres by auteur:', error);
+      throw new Error('Failed to retrieve books by author: ' + error.message);
+    }
+  },
+
+  async findAllLivresByPageLimit(page, limit) {
+    try {
+      const skip = (page - 1) * limit;
+      return await prisma.livre.findMany({
+        skip,
+        take: limit,
+        include: {
+          editeur: true
+        }
+      });
+    } catch (error) {
+      console.error('Error finding livres by page and limit:', error);
+      throw new Error('Failed to retrieve books with pagination: ' + error.message);
+    }
+  }
 };

@@ -1,22 +1,29 @@
 // config/database.js
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import { logger } from "../utils/logger.js";
+import pkg from 'pg';
+const { Pool } = pkg;
 
+// Create a connection pool
+const pool = new Pool({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    database: process.env.DB_NAME || 'bibliotheque',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'your_password'
+});
 
-//  * Ouvre une connexion à la base de données SQLite.
-//  * @returns {Promise<import('sqlite').Database>} Instance de la base de données.
+/**
+ * Opens a connection to the PostgreSQL database.
+ * @returns {Promise<import('pg').PoolClient>} Database client
+ */
 export async function openDB() {
     try {
-            const myDb = open({
-            filename: './data/bibliotheque.db',
-            // filename: "./tests/mydb.db",
-            driver: sqlite3.Database,
-        });            
-
-        return myDb;
+        const client = await pool.connect();
+        return client;
     } catch (error) {
-        logger.error("Failed to open database", error);
+        console.error("Failed to open database", error);
         throw new Error("Failed to open database");
     }
-}   
+}
+
+// Export the pool for potential global use
+export const dbPool = pool;
